@@ -13,6 +13,7 @@ class BaseRPiRoutine(threading.Thread):
         self.pins = agent.pins
 
     def run(self):
+        self.pins.reset()
         self.routine()
 
     def settings(self, setting_name, new_value=None):
@@ -35,8 +36,8 @@ class BaseRPiRoutine(threading.Thread):
 class LedCycleRPiRoutine(BaseRPiRoutine):
     def routine(self):
         pins = self.pins
-        #pins.register(pins.IN[0], lambda x: self.speed_up(), bouncetime=200)
-        #pins.register(pins.IN[1], lambda x: self.slow_down(), bouncetime=200)
+        pins.register(pins.IN[0], lambda x: self.speed_up())
+        pins.register(pins.IN[1], lambda x: self.slow_down())
         for x in xrange(6):
             pins.led_on(pins.OUT[x])
             sleep(self.settings('cycle_delay'))

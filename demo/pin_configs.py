@@ -4,14 +4,17 @@ from gpio_map_board import *
 
 class BaseRPiPinConfig(object):
     def __init__(self, cleanup=False):
+        self.registered_channels = {}
+        self.defaults = {}
         if cleanup:
             self.cleanup()
         self._setup_pins()
-        self.registered_channels = {}
 
     def cleanup(self):
         """Cleanup GPIO settings
         """
+        for channel in self.registered_channels.keys():
+            del self.registered_channels[channel]
         GPIO.cleanup()
 
     def _setup_pins(self):
@@ -28,12 +31,9 @@ class BaseRPiPinConfig(object):
 
         outputs = self.get_outputs()
         for (channel, default,) in outputs:
-            # TODO: why doesn't this work?
             # per https://code.google.com/p/raspberry-gpio-python/wiki/BasicUsage
-            #GPIO.setup(channel, GPIO.OUT, initial=GPIO.HIGH)
-            GPIO.setup(channel, GPIO.OUT)
-            # reset
-            GPIO.output(channel, default)
+            self.defaults[channel] = default
+            GPIO.setup(channel, GPIO.OUT, initial=default)
             self.OUT.append(channel)
 
     def get_inputs(self):
@@ -44,24 +44,38 @@ class BaseRPiPinConfig(object):
         outputs = []
         return outputs
 
+    def reset(self):
+        """Resets all output pins to default value
+        """
+        for channel, default in self.defaults.items():
+            GPIO.output(channel, default)
+
     def input(self, channel):
         """Check GPIO.input for `channel`
         """
-        signal = bool(GPIO.input(channel))
+        signal = GPIO.input(channel) == GPIO.HIGH
         return signal
 
     def register(self, channel, callback, bouncetime=200):
+        return
         """Adds a callback on event
+
+        `bouncetime` milliseconds
 
         Switch debounce technique
         https://code.google.com/p/raspberry-gpio-python/wiki/Inputs#Switch_debounce
         """
         if channel not in self.registered_channels:
-            # just add the event detection, not the callback (do separately)
-            #GPIO.add_event_detect(channel, GPIO.RISING, callback=callback, bouncetime=200)
+            # add the event detection and callback separately
+            #GPIO.add_event_detect(channel, GPIO.RISING, callback=callback, bouncetime=bouncetime)
+            GPIO.remove_event_detect(channel)
             GPIO.add_event_detect(channel, GPIO.RISING)
-            self.registered_channels[channel] = True
-        GPIO.add_event_callback(channel, callback, bouncetime=bouncetime)
+            self.registered_channels[channel] = {}
+        channel_callbacks = self.registered_channels[channel]
+        if callback not in channel_callbacks:
+            # limit adding a particular callback function on a particular channel to one time
+            channel_callbacks[callback] = True
+            GPIO.add_event_callback(channel, callback, bouncetime=bouncetime)
 
     def deregister(self, channel):
         if channel in self.registered_channels:
