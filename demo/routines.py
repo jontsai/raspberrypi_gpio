@@ -36,8 +36,8 @@ class BaseRPiRoutine(threading.Thread):
 class LedCycleRPiRoutine(BaseRPiRoutine):
     def routine(self):
         pins = self.pins
-        pins.register(pins.IN[0], lambda x: self.speed_up())
-        pins.register(pins.IN[1], lambda x: self.slow_down())
+        pins.register(pins.IN[0], lambda channel: self.speed_up())
+        pins.register(pins.IN[1], lambda channel: self.slow_down())
         for x in xrange(6):
             pins.led_on(pins.OUT[x])
             sleep(self.settings('cycle_delay'))

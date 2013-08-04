@@ -49,18 +49,45 @@ class BaseRPiAgent(threading.Thread):
 class DemoRPiAgent(BaseRPiAgent):
     def __init__(self, *args, **kwargs):
         pin_config = SwitchLedRPiPinConfig(cleanup=True)
+        pins = pin_config
         super(DemoRPiAgent, self).__init__(pin_config=pin_config, *args, **kwargs)
         self.current_routine_index = 0
         self.switch_current_routine(index=self.current_routine_index)
+        self.button_sequence = []
+        self.button_pattern_routines = (
+            ([pins.IN[0], pins.IN[1], pins.IN[0], pins.IN[1]],
+             self.switch_current_routine,)
+        )
+
+    def handle_button_pressed(self, channel):
+        # store/update the button press to the button sequence
+        self.button_sequence.append(channel)
+        self.check_sequence()
+
+    def check_sequence(self):
+        """Checks for a matched button sequence
+        If there is a match, kicks off the matched button sequence routine
+
+        We are using this technique since the techniques for detecting combination button presses are limited
+        Detecting combination button presses only gives us 2^B states, where B is the number of buttons
+        However, with this technique, we can have infinitely long sequences and infinitely many distinct commands
+        """
+        sequence = self.button_sequence
+        # if a matched sequence is found, kick off the button routine
+        for pattern, button_routine in self.button_pattern_routines:
+            while len(pattern) >= len(sequence):
+                if pattern[:len(sequence)] == sequence:
+                    # compare slices/subsequences to see if there is a match
+                    button_routine()
+                    break
+                else:
+                    # shorten the pattern
+                    pattern = pattern[1:]
 
     def execute_routine(self):
         pins = self.pins
-        # def callback(x):
-        #     if pins.input(pins.IN[0]) and pins.input(pins.IN[1]):
-        #         self.switch_current_routine()
-        # pins.register(pins.IN[0], callback, bouncetime=200)
-        if pins.input(pins.IN[0]) and pins.input(pins.IN[1]):
-            self.switch_current_routine()
+        pins.register(pins.IN[0], self.handle_button_pressed)
+        pins.register(pins.IN[1], self.handle_button_pressed)
 
         if not hasattr(self, 'routine') or self.routine is None:
             # no routine set, so set one
