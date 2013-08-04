@@ -8,6 +8,9 @@ DEFAULT_ROUTINE_SETTINGS = {
     'TwinklingLedRPiRoutine' : {
         'max_delay' : 2,
     },
+    'PulsingLedRPiRoutine' : {
+        'frequency' : 50, # unit = Hz
+    },
     'BinaryCountLedRPiRoutine' : {
         'delay' : 0.1,
     },

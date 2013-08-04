@@ -109,6 +109,38 @@ class BinaryCountLedRPiRoutine(BaseRPiRoutine):
             n >>= 1
         return bits
 
+class PulsingLedRPiRoutine(BaseRPiRoutine):
+    def routine(self):
+        pins = self.pins
+
+        lights_on = []
+        for x in xrange(6):
+            if random.choice([True, False]):
+                lights_on.append(pins.OUT[x])
+        self.pulsate(lights_on)
+
+    def pulsate(self, channels):
+        """Pulsate the LEDs in `channels`
+        """
+        pins = self.pins
+        frequency = self.settings('frequency')
+        pwms = [pins.pwm(channel, frequency) for channel in channels]
+        # start off
+        for pwm in pwms:
+            pwm.start(0)
+        # first brighten
+        for dc in range(0, 101, 5):
+            for pwm in pwms:
+                pwm.ChangeDutyCycle(dc)
+            sleep(0.1)
+        # then dim
+        for dc in range(100, -1, -5):
+            for pwm in pwms:
+                pwm.ChangeDutyCycle(dc)
+            sleep(0.1)
+        for pwm in pwms:
+            pwm.stop()
+
 class ButtonControlSetsRPiRoutine(BaseRPiRoutine):
     def routine(self):
         pins = self.pins
@@ -128,6 +160,7 @@ class ButtonControlSetsRPiRoutine(BaseRPiRoutine):
 ROUTINE_CLASSES = [
     LedCycleRPiRoutine,
     TwinklingLedRPiRoutine,
+    PulsingLedRPiRoutine,
     BinaryCountLedRPiRoutine,
     ButtonControlSetsRPiRoutine,
 ]

@@ -56,6 +56,10 @@ class BaseRPiPinConfig(object):
         signal = GPIO.input(channel) == GPIO.HIGH
         return signal
 
+    def pwm(self, channel, frequency):
+        pwm = GPIO.PWM(channel, frequency)
+        return pwm
+
     def register(self, channel, callback, bouncetime=200):
         return
         """Adds a callback on event
