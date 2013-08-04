@@ -9,7 +9,7 @@ DEFAULT_ROUTINE_SETTINGS = {
         'max_delay' : 2,
     },
     'BinaryCountLedRPiRoutine' : {
-        'delay' : 0.5,
+        'delay' : 0.1,
     },
     'ButtonControlSetsRPiRoutine' : {
     },

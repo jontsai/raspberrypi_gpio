@@ -7,6 +7,9 @@ from routines import get_random_routine
 from routines import get_routine_n
 from settings import DEFAULT_ROUTINE_SETTINGS
 
+CYCLE_SLEEP_DURATION = 10 # milliseconds
+ROUTINE_ROTATION_DURATION = 15000 # milliseconds
+
 class BaseRPiAgent(threading.Thread):
     def __init__(self, pin_config=None, *args, **kwargs):
         #threading.Thread.__init__(self, *args, **kwargs)
@@ -15,6 +18,7 @@ class BaseRPiAgent(threading.Thread):
         self.should_run = True
         self.routine = None
         self.set_routine_settings()
+        self.running_time = 0
 
     def set_routine_settings(self):
         """Initialize routine settings to defaults
@@ -25,7 +29,9 @@ class BaseRPiAgent(threading.Thread):
         print 'Running %s' % (self.__class__.__name__,)
         while self.should_run:
             self.execute_routine()
-            sleep(0.01) # sleep for 10 milliseconds
+            # CYCLE_SLEEP_DURATION expresed in milliseconds to prevent rounding errors
+            sleep(CYCLE_SLEEP_DURATION / 1000.)
+            self.running_time += CYCLE_SLEEP_DURATION
 
     def get_routine(self):
         routine = self.routine if hasattr(self, 'routine') else None
@@ -88,6 +94,11 @@ class DemoRPiAgent(BaseRPiAgent):
         pins = self.pins
         pins.register(pins.IN[0], self.handle_button_pressed)
         pins.register(pins.IN[1], self.handle_button_pressed)
+
+        if self.running_time > 0 and self.running_time % ROUTINE_ROTATION_DURATION == 0:
+            # change routines every so often
+            print 'Demo running time: %ss' % (self.running_time / 1000.)
+            self.switch_current_routine()
 
         if not hasattr(self, 'routine') or self.routine is None:
             # no routine set, so set one
