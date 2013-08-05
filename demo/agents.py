@@ -8,7 +8,7 @@ from routines import get_routine_n
 from settings import DEFAULT_ROUTINE_SETTINGS
 
 CYCLE_SLEEP_DURATION = 10 # milliseconds
-ROUTINE_ROTATION_DURATION = 15000 # milliseconds
+ROUTINE_ROTATION_DURATION = 120 # seconds
 
 class BaseRPiAgent(threading.Thread):
     def __init__(self, pin_config=None, *args, **kwargs):
@@ -59,10 +59,14 @@ class DemoRPiAgent(BaseRPiAgent):
         super(DemoRPiAgent, self).__init__(pin_config=pin_config, *args, **kwargs)
         self.current_routine_index = 0
         self.switch_current_routine(index=self.current_routine_index)
-        self.button_sequence = []
+        self.reset_button_sequence()
         self.button_pattern_routines = (
             ([pins.IN[0], pins.IN[1], pins.IN[0], pins.IN[1]],
-             self.switch_current_routine,)
+             self.switch_current_routine,),
+            ([pins.IN[0]] * 20,
+             self.reset_button_sequence),
+            ([pins.IN[1]] * 20,
+             self.reset_button_sequence),
         )
 
     def handle_button_pressed(self, channel):
@@ -80,22 +84,26 @@ class DemoRPiAgent(BaseRPiAgent):
         """
         sequence = self.button_sequence
         # if a matched sequence is found, kick off the button routine
-        for pattern, button_routine in self.button_pattern_routines:
-            while len(pattern) >= len(sequence):
-                if pattern[:len(sequence)] == sequence:
+        for (pattern, button_routine,) in self.button_pattern_routines:
+            while len(sequence) >= len(pattern):
+                if pattern == sequence[:len(pattern)]:
                     # compare slices/subsequences to see if there is a match
+                    self.reset_button_sequence()
                     button_routine()
                     break
                 else:
-                    # shorten the pattern
-                    pattern = pattern[1:]
+                    # shorten the seqeuence
+                    sequence = sequence[1:]
+
+    def reset_button_sequence(self):
+        self.button_sequence = []
 
     def execute_routine(self):
         pins = self.pins
         pins.register(pins.IN[0], self.handle_button_pressed)
         pins.register(pins.IN[1], self.handle_button_pressed)
 
-        if self.running_time > 0 and self.running_time % ROUTINE_ROTATION_DURATION == 0:
+        if self.running_time > 0 and self.running_time % (ROUTINE_ROTATION_DURATION * 1000) == 0:
             # change routines every so often
             print 'Demo running time: %ss' % (self.running_time / 1000.)
             self.switch_current_routine()

@@ -61,7 +61,6 @@ class BaseRPiPinConfig(object):
         return pwm
 
     def register(self, channel, callback, bouncetime=200):
-        return
         """Adds a callback on event
 
         `bouncetime` milliseconds
