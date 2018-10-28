@@ -3,7 +3,7 @@
 Runs an Raspberry Pi GPIO demo
 
 Usage:
-    sudo python demo.py [-h|--help] [-d|--daemon]
+    [sudo] python demo.py [-h|--help] [-d|--daemon]
 
 Options:
     -h|--help       Displays this help
