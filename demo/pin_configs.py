@@ -31,7 +31,7 @@ class BaseRPiPinConfig(object):
 
         outputs = self.get_outputs()
         for (channel, default,) in outputs:
-            # per https://code.google.com/p/raspberry-gpio-python/wiki/BasicUsage
+            # per https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
             self.defaults[channel] = default
             GPIO.setup(channel, GPIO.OUT, initial=default)
             self.OUT.append(channel)
@@ -66,7 +66,7 @@ class BaseRPiPinConfig(object):
         `bouncetime` milliseconds
 
         Switch debounce technique
-        https://code.google.com/p/raspberry-gpio-python/wiki/Inputs#Switch_debounce
+        https://sourceforge.net/p/raspberry-gpio-python/wiki/Inputs/#switch-debounce
         """
         if channel not in self.registered_channels:
             # add the event detection and callback separately
