@@ -24,7 +24,7 @@ class Usage(Exception):
         self.msg = msg
 
 def version():
-    print 'Raspberry Pi board revision: %s' % GPIO.RPI_REVISION
+    print 'Raspberry Pi board revision: %s' % GPIO.RPI_INFO['P1_REVISION']
     print 'RPi.GPIO version: %s' % GPIO.VERSION
  
 OPTIONS_SHORT = 'hdv'

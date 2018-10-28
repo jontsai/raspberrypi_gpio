@@ -61,12 +61,18 @@ class DemoRPiAgent(BaseRPiAgent):
         self.switch_current_routine(index=self.current_routine_index)
         self.reset_button_sequence()
         self.button_pattern_routines = (
-            ([pins.IN[0], pins.IN[1], pins.IN[0], pins.IN[1]],
-             self.switch_current_routine,),
-            ([pins.IN[0]] * 20,
-             self.reset_button_sequence),
-            ([pins.IN[1]] * 20,
-             self.reset_button_sequence),
+            (
+                [pins.IN[0], pins.IN[1], pins.IN[0], pins.IN[1],],
+                self.switch_current_routine,
+            ),
+            (
+                [pins.IN[0],] * 20,
+                self.reset_button_sequence,
+            ),
+            (
+                [pins.IN[1],] * 20,
+                self.reset_button_sequence,
+            ),
         )
 
     def handle_button_pressed(self, channel):
@@ -82,17 +88,22 @@ class DemoRPiAgent(BaseRPiAgent):
         Detecting combination button presses only gives us 2^B states, where B is the number of buttons
         However, with this technique, we can have infinitely long sequences and infinitely many distinct commands
         """
-        sequence = self.button_sequence
-        # if a matched sequence is found, kick off the button routine
+        # check to see if current button sequence matches any pre-defined patterns
         for (pattern, button_routine,) in self.button_pattern_routines:
+            sequence = self.button_sequence
+
+            # compare slices/subsequences to see if there is a match
             while len(sequence) >= len(pattern):
-                if pattern == sequence[:len(pattern)]:
-                    # compare slices/subsequences to see if there is a match
+                subsequence = sequence[:len(pattern)]
+                if subsequence == pattern:
+                    # a matching subsequence is found
+                    # reset current sequence and kick off the button routine
                     self.reset_button_sequence()
                     button_routine()
                     break
                 else:
-                    # shorten the seqeuence
+                    # no sequence is found yet
+                    # shorten to obtain the next subseqeuence
                     sequence = sequence[1:]
 
     def reset_button_sequence(self):

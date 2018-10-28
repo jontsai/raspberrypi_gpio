@@ -25,9 +25,8 @@ class BaseRPiPinConfig(object):
         #GPIO.setwarnings(False)
 
         inputs = self.get_inputs()
-        for channel in inputs:
-            GPIO.setup(channel, GPIO.IN)
-            self.IN.append(channel)
+        GPIO.setup(inputs, GPIO.IN)
+        self.IN = inputs
 
         outputs = self.get_outputs()
         for (channel, default,) in outputs:
@@ -78,7 +77,9 @@ class BaseRPiPinConfig(object):
         if callback not in channel_callbacks:
             # limit adding a particular callback function on a particular channel to one time
             channel_callbacks[callback] = True
-            GPIO.add_event_callback(channel, callback, bouncetime=bouncetime)
+            # TODO: bouncetime parameter not being accepted?
+            #GPIO.add_event_callback(channel, callback, bouncetime=bouncetime)
+            GPIO.add_event_callback(channel, callback)
 
     def deregister(self, channel):
         if channel in self.registered_channels:
@@ -86,6 +87,8 @@ class BaseRPiPinConfig(object):
             del self.registered_channels[channel]
 
 class SwitchLedRPiPinConfig(BaseRPiPinConfig):
+    """A pin configuration with 2 inputs (2 button switches) and 6 outputs (LEDs)
+    """
     def get_inputs(self):
         inputs = [
             GP0,
