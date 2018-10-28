@@ -8,14 +8,13 @@ Some of my personal tinkering/hack projects, will get more organized later.
 Setup and Installation
 ======================
 
-0. Make sure you have the prerequisite packages and environment installed for Raspbian, check out my other repository of scripts on GitHub:
+0. Make sure you have the prerequisite packages and environment installed for Raspbian, check out my other repository of scripts on GitHub:  
    https://github.com/jontsai/raspbian-bootstrap
-1. Clone this repository
+1. Clone this repository  
    `git clone git@github.com:jontsai/raspberrypi_gpio`
-2. (Optional) Create a `virtualenv` for local testing
-   `cd venv`
+2. Create a `virtualenv` for local testing  
    `virtualenv venv`
-   `make`
+   `venv/bin/pip install -R requirements.txt`
 3. Check out the `demo/` or `tutorial/`
 
 Demo
